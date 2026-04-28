@@ -1,0 +1,13 @@
+services:
+  excel-mcp-server:
+    build: .
+    container_name: excel-mcp-server
+    ports:
+      - "${FASTMCP_PORT:-8017}:8017"
+    environment:
+      FASTMCP_HOST: 0.0.0.0
+      FASTMCP_PORT: 8017
+      EXCEL_FILES_PATH: /app/excel_files
+    volumes:
+      - ./excel_files:/app/excel_files
+    restart: unless-stopped

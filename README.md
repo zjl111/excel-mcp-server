@@ -27,6 +27,35 @@ A Model Context Protocol (MCP) server that lets you manipulate Excel files witho
 
 The server supports three transport methods:
 
+## Docker
+
+### Build and run with Docker
+
+```bash
+docker build -t excel-mcp-server .
+docker run -d \
+  --name excel-mcp-server \
+  -p 8017:8017 \
+  -e FASTMCP_PORT=8017 \
+  -e EXCEL_FILES_PATH=/app/excel_files \
+  -v "$(pwd)/excel_files:/app/excel_files" \
+  excel-mcp-server
+```
+
+The container starts in `streamable-http` mode by default, so the MCP endpoint is:
+
+```text
+http://localhost:8017/mcp
+```
+
+### Run with Docker Compose
+
+```bash
+docker compose up -d --build
+```
+
+Excel files created by the server will be stored in the local `./excel_files` directory.
+
 ### 1. Stdio Transport (for local use)
 
 ```bash
