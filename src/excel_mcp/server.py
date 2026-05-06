@@ -342,16 +342,12 @@ def generate_ecc_report_from_template(
     qingteng_summary: Any,
     qingteng_abnormal_login_count: Any,
     output_file: str,
-    template_file: str = "templates/ECC_TEMPLATE.xlsx",
-    start_date: str = "",
-    end_date: str = "",
 ) -> str:
     """Generate ECC report xlsx from cleaned JSON data using the fixed template."""
     try:
-        full_template = get_excel_path(template_file)
         full_output = get_excel_path(output_file)
         result = generate_ecc_report_from_template_impl(
-            template_file=full_template,
+            template_file=get_excel_path("templates/ECC_TEMPLATE.xlsx"),
             output_file=full_output,
             production_events=production_events,
             os_baseline_events=os_baseline_events,
@@ -359,8 +355,6 @@ def generate_ecc_report_from_template(
             qingteng_events=qingteng_events,
             qingteng_summary=qingteng_summary,
             qingteng_abnormal_login_count=qingteng_abnormal_login_count,
-            start_date=start_date,
-            end_date=end_date,
         )
         return json.dumps(result, ensure_ascii=False, indent=2)
     except (WorkbookError, DataError, ValidationError) as e:
