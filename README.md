@@ -56,6 +56,20 @@ docker compose up -d --build
 
 Excel files created by the server will be stored in the local `./excel_files` directory.
 
+### ECC template
+
+The repository includes an ECC report template intended to stay inside the MCP-accessible files directory:
+
+```text
+excel_files/templates/ECC_TEMPLATE.xlsx
+```
+
+Regenerate it with:
+
+```bash
+python3 scripts/build_ecc_template.py
+```
+
 ### 1. Stdio Transport (for local use)
 
 ```bash

@@ -1,6 +1,10 @@
 .venv/
 dist/
-excel_files/
+excel_files/*
+!excel_files/templates/
+excel_files/templates/*
+!excel_files/templates/ECC_TEMPLATE.xlsx
+!excel_files/templates/README.md
 __pycache__/
 .notes/
 *.log
