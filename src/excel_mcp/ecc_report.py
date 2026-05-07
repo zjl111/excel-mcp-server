@@ -343,6 +343,19 @@ def reset_sheet_rows(ws, keep_rows: int = 0) -> None:
 def ensure_summary_charts(ws) -> None:
     ws._charts = []
 
+    def nice_axis_max(values: list[int]) -> int:
+        max_value = max(values or [1])
+        buffered = max_value * 1.15
+        if buffered <= 10:
+            step = 1
+        elif buffered <= 50:
+            step = 5
+        elif buffered <= 100:
+            step = 10
+        else:
+            step = 20
+        return max(step, int((buffered + step - 1) // step) * step)
+
     def find_row(title: str) -> int:
         for row in range(1, ws.max_row + 1):
             if ws.cell(row, 1).value == title:
@@ -394,17 +407,27 @@ def ensure_summary_charts(ws) -> None:
     type_chart.barDir = "bar"
     type_chart.style = 10
     type_chart.title = "告警类型统计"
-    data = Reference(ws, min_col=2, min_row=type_header_row, max_row=max(type_header_row + 1, hf_title_row - 2))
-    cats = Reference(ws, min_col=1, min_row=type_header_row + 1, max_row=max(type_header_row + 1, hf_title_row - 2))
+    type_last_row = max(type_header_row + 1, hf_title_row - 2)
+    type_values = [
+        int(ws.cell(row, 2).value or 0)
+        for row in range(type_header_row + 1, type_last_row + 1)
+        if ws.cell(row, 1).value not in (None, "")
+    ]
+    data = Reference(ws, min_col=2, min_row=type_header_row, max_row=type_last_row)
+    cats = Reference(ws, min_col=1, min_row=type_header_row + 1, max_row=type_last_row)
     type_chart.add_data(data, titles_from_data=True)
     type_chart.set_categories(cats)
+    type_chart.legend = None
+    type_chart.gapWidth = 45
+    type_chart.x_axis.scaling.min = 0
+    type_chart.x_axis.scaling.max = nice_axis_max(type_values)
     for series in type_chart.series:
         series.graphicalProperties.solidFill = "ED7D31"
         series.graphicalProperties.line.solidFill = "ED7D31"
         series.dLbls = DataLabelList()
         series.dLbls.showVal = True
-    type_chart.height = 8.5
-    type_chart.width = 18
+    type_chart.height = min(8.5, max(5.8, 3.6 + 0.8 * max(len(type_values), 1)))
+    type_chart.width = 13.5
     ws.add_chart(type_chart, "G39")
 
 

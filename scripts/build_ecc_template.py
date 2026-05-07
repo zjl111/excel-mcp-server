@@ -171,13 +171,17 @@ def build_summary_sheet(ws) -> None:
     cats = Reference(ws, min_col=1, min_row=19, max_row=19)
     type_chart.add_data(data, titles_from_data=True)
     type_chart.set_categories(cats)
+    type_chart.legend = None
+    type_chart.gapWidth = 45
+    type_chart.x_axis.scaling.min = 0
+    type_chart.x_axis.scaling.max = 5
     for series in type_chart.series:
         series.graphicalProperties.solidFill = "ED7D31"
         series.graphicalProperties.line.solidFill = "ED7D31"
         series.dLbls = DataLabelList()
         series.dLbls.showVal = True
-    type_chart.height = 8.5
-    type_chart.width = 18
+    type_chart.height = 5.8
+    type_chart.width = 13.5
     ws.add_chart(type_chart, "G39")
 
 
