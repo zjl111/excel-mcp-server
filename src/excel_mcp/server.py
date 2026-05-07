@@ -28,7 +28,10 @@ from excel_mcp.workbook import get_workbook_info
 from excel_mcp.data import write_data
 from excel_mcp.pivot import create_pivot_table as create_pivot_table_impl
 from excel_mcp.tables import create_excel_table as create_table_impl
-from excel_mcp.ecc_report import generate_ecc_report_from_template as generate_ecc_report_from_template_impl
+from excel_mcp.ecc_report import (
+    generate_ecc_report_from_template as generate_ecc_report_from_template_impl,
+    generate_ecc_report_from_template_files as generate_ecc_report_from_template_files_impl,
+)
 from excel_mcp.sheet import (
     copy_sheet,
     delete_sheet,
@@ -361,6 +364,41 @@ def generate_ecc_report_from_template(
         return f"Error: {str(e)}"
     except Exception as e:
         logger.error(f"Error generating ECC report from template: {e}")
+        raise
+
+@mcp.tool(
+    annotations=ToolAnnotations(
+        title="Generate ECC Report from Template Files",
+        destructiveHint=True,
+    ),
+)
+def generate_ecc_report_from_template_files(
+    production_events_file: str,
+    os_baseline_events_file: str,
+    omp_alerts_file: str,
+    qingteng_events_file: str,
+    qingteng_summary_file: str,
+    qingteng_abnormal_login_count_file: str,
+    output_file: str,
+) -> str:
+    """Generate ECC report xlsx from JSON files using the fixed template."""
+    try:
+        full_output = get_excel_path(output_file)
+        result = generate_ecc_report_from_template_files_impl(
+            template_file=get_excel_path("templates/ECC_TEMPLATE.xlsx"),
+            output_file=full_output,
+            production_events_file=get_excel_path(production_events_file),
+            os_baseline_events_file=get_excel_path(os_baseline_events_file),
+            omp_alerts_file=get_excel_path(omp_alerts_file),
+            qingteng_events_file=get_excel_path(qingteng_events_file),
+            qingteng_summary_file=get_excel_path(qingteng_summary_file),
+            qingteng_abnormal_login_count_file=get_excel_path(qingteng_abnormal_login_count_file),
+        )
+        return json.dumps(result, ensure_ascii=False, indent=2)
+    except (WorkbookError, DataError, ValidationError) as e:
+        return f"Error: {str(e)}"
+    except Exception as e:
+        logger.error(f"Error generating ECC report from template files: {e}")
         raise
 
 @mcp.tool(

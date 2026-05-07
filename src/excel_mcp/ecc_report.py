@@ -100,6 +100,16 @@ def parse_int_from_text(block: Any) -> int:
     return int(match.group(1)) if match else 0
 
 
+def load_json_file(path: str) -> Any:
+    file_path = Path(path)
+    if not file_path.exists():
+        raise DataError(f"JSON file not found: {file_path}")
+    try:
+        return json.loads(file_path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        raise DataError(f"Invalid JSON in file {file_path}: {exc}") from exc
+
+
 def make_source_data(
     production_events: Any = "",
     os_baseline_events: Any = "",
@@ -793,6 +803,50 @@ def generate_ecc_report_from_template(
         qingteng_events=qingteng_events,
         qingteng_summary=qingteng_summary,
         qingteng_abnormal_login_count=qingteng_abnormal_login_count,
+    )
+    used_start, used_end = build_report_from_template(
+        data=data,
+        template_path=template_file,
+        output_path=output_file,
+        start=parse_date_arg(start_date),
+        end=parse_date_arg(end_date),
+    )
+    return {
+        "success": True,
+        "message": f"已生成: {output_file}",
+        "file_path": output_file,
+        "template_file": template_file,
+        "start_date": f"{used_start:%Y-%m-%d}",
+        "end_date": f"{used_end:%Y-%m-%d}",
+    }
+
+
+def generate_ecc_report_from_template_files(
+    template_file: str = DEFAULT_TEMPLATE,
+    output_file: str = "",
+    production_events_file: str = "",
+    os_baseline_events_file: str = "",
+    omp_alerts_file: str = "",
+    qingteng_events_file: str = "",
+    qingteng_summary_file: str = "",
+    qingteng_abnormal_login_count_file: str = "",
+    start_date: str = "",
+    end_date: str = "",
+) -> dict[str, Any]:
+    if not output_file:
+        output_file = f"reports/ECC_{datetime.now():%Y%m%d_%H%M%S}.xlsx"
+
+    abnormal_login_payload = load_json_file(qingteng_abnormal_login_count_file) if qingteng_abnormal_login_count_file else 0
+    if isinstance(abnormal_login_payload, dict):
+        abnormal_login_payload = abnormal_login_payload.get("count", abnormal_login_payload.get("value", 0))
+
+    data = make_source_data(
+        production_events=load_json_file(production_events_file) if production_events_file else [],
+        os_baseline_events=load_json_file(os_baseline_events_file) if os_baseline_events_file else [],
+        omp_alerts=load_json_file(omp_alerts_file) if omp_alerts_file else [],
+        qingteng_events=load_json_file(qingteng_events_file) if qingteng_events_file else [],
+        qingteng_summary=load_json_file(qingteng_summary_file) if qingteng_summary_file else [],
+        qingteng_abnormal_login_count=abnormal_login_payload,
     )
     used_start, used_end = build_report_from_template(
         data=data,
